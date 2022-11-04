@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from tkinter import filedialog
 import cv2 as cv
 
+state5 = True
+
 # window open
 tk = Tk()
 tk.geometry('1500x700')
@@ -22,7 +24,7 @@ inputLabel = Label(inputF)
 inputLabel.pack()
 
 # notice result
-result = Image.open('./result_arrow.jpg')
+result = Image.open('C:/Users/User/Desktop/filters/CVfilter/result_arrow.jpg')
 result = result.resize((100, 100))
 result = ImageTk.PhotoImage(result)
 
@@ -30,7 +32,7 @@ resultLabel = Label(tk, image=result)
 resultLabel.place(x=430, y=225, width=100, height=100)
 
 """
-Mean Filter
+Filter
 """
 # 3x3 result
 m33result = LabelFrame(tk, text="3x3 Result", padx=10, pady=10)
@@ -45,6 +47,18 @@ m55result.place(x=980, y=100, width=350, height=350)
 
 m55resultLabel = Label(m55result)
 m55resultLabel.pack()
+
+def type_check(type):
+    global state5
+
+    if type == "low-pass" and state5 == False:
+        m55result.place(x=980, y=100, width=350, height=350)
+        m55resultLabel.pack()
+        state5 = True
+    elif type == "high-pass":
+        m55resultLabel.pack_forget()
+        m55result.place_forget()
+        state5 = False
 
 def image_url():
     tk.filename = filedialog.askopenfilename(initialdir='', title='파일선택', filetypes=(('all files', '*.*'), ('png files', '*.png'), ('jpg files', '*.jpg')))
@@ -62,11 +76,16 @@ def image_open(filter):
 
     inputLabel.config(image=imgtk)
     if filter == "Mean":
+        type_check("low-pass")
         mean_filter(img)
         mean_filter(img, (5,5))
     elif filter == "Median":
+        type_check("low-pass")
         median_filter(img)
         median_filter(img, (5,5))
+    elif filter == "Laplacian":
+        type_check("high-pass")
+        laplacian_filter(img)
 
 def mean_filter(img, filter_size=(3,3)):
     global meantk33
@@ -108,11 +127,19 @@ def median_filter(img, filter_size=(3,3)):
         mediantk55 = ImageTk.PhotoImage(image=imgarr)
         m55resultLabel.config(image=mediantk55)
    
+def laplacian_filter(img):
+    global laplaciantk33
+
+    resImg = cv.Laplacian(img, -1)
+    imgarr = Image.fromarray(resImg)
+    laplaciantk33 = ImageTk.PhotoImage(image=imgarr)
+    m33resultLabel.config(image=laplaciantk33)
+    
 meanBtn = Button(frame, text='Mean 필터', command=lambda: image_open("Mean"), width=12, height=1)
 meanBtn.grid(row=0, column=0, padx=10)
 medianBtn = Button(frame, text="Median 필터", command=lambda: image_open("Median"), width=12, height=1)
 medianBtn.grid(row=0, column=1, padx=10)
-laplacianBtn = Button(frame, text='Laplacian 필터', width=12, height=1)
+laplacianBtn = Button(frame, text='Laplacian 필터', command=lambda: image_open("Laplacian"), width=12, height=1)
 laplacianBtn.grid(row=0, column=2, padx=10)
 freeBtn = Button(frame, text='Choice 필터', width=12, height=1)
 freeBtn.grid(row=0, column=3, padx=10)
