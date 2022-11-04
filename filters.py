@@ -11,6 +11,7 @@ state5 = True
 # window open
 tk = Tk()
 tk.geometry('1500x700')
+tk.title('Spacial Filters')
 
 # filters btn frame
 frame = LabelFrame(tk, text="필터 선택", padx=10, pady=10)
@@ -24,7 +25,7 @@ inputLabel = Label(inputF)
 inputLabel.pack()
 
 # notice result
-result = Image.open('C:/Users/User/Desktop/filters/CVfilter/result_arrow.jpg')
+result = Image.open('./image/result_arrow.jpg')
 result = result.resize((100, 100))
 result = ImageTk.PhotoImage(result)
 
