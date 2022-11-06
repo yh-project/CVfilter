@@ -7,10 +7,11 @@ from tkinter import filedialog
 import cv2 as cv
 
 state5 = True
+curfilter = "Mean"
 
 # window open
 tk = Tk()
-tk.geometry('1500x700')
+tk.geometry('1500x900')
 tk.title('Spacial Filters')
 
 # filters btn frame
@@ -49,6 +50,49 @@ m55result.place(x=980, y=100, width=350, height=350)
 m55resultLabel = Label(m55result)
 m55resultLabel.pack()
 
+"""
+Option
+"""
+# option
+optionFrame = LabelFrame(tk, text="Option")
+optionFrame.place(x=30, y=500, width=350, height=350)
+
+kMent = Label(optionFrame, text="필터 사이즈(n * n)")
+kMent.place(x=50, y=30, width=100, height=20)
+
+kInput = Entry(optionFrame)
+kInput.place(x=200, y=30, width=100, height=20)
+
+sMent = Label(optionFrame, text="스케일(default=1)")
+sMent.place(x=50, y=70, width=100, height=20)
+
+sInput = Entry(optionFrame)
+sInput.place(x=200, y=70, width=100, height=20)
+
+dMent = Label(optionFrame, text="델타(default=1)")
+dMent.place(x=50, y=110, width=100, height=20)
+
+dInput = Entry(optionFrame)
+dInput.place(x=200, y=110, width=100, height=20)
+
+rBtn = Button(optionFrame, text="옵션 적용", command=lambda: image_open("Option"))
+rBtn.place(x=50, y=290, width=250, height=30)
+
+# option notice result
+oresult = Image.open('./image/result_arrow.jpg')
+oresult = oresult.resize((100, 100))
+oresult = ImageTk.PhotoImage(oresult)
+
+oresultLabel = Label(tk, image=result)
+oresultLabel.place(x=430, y=625, width=100, height=100)
+
+# option result
+optionresult = LabelFrame(tk, text="Option Result", padx=10, pady=10)
+optionresult.place(x=580, y=500, width=350, height=350)
+
+optionresultLabel = Label(optionresult)
+optionresultLabel.pack()
+
 def type_check(type):
     global state5
 
@@ -67,30 +111,45 @@ def image_url():
 
 def image_open(filter):
     global imgtk
+    global curfilter
+    global imgs
 
-    fn = image_url()
+    if filter != "Option":
+        fn = image_url()
 
-    img = cv.imread(fn, cv.IMREAD_GRAYSCALE)
-    img = cv.resize(img, (300, 300))
-    imgarr = Image.fromarray(img)
-    imgtk = ImageTk.PhotoImage(image=imgarr)
+        imgs = cv.imread(fn, cv.IMREAD_GRAYSCALE)
+        imgs = cv.resize(imgs, (300, 300))
+        imgarr = Image.fromarray(imgs)
+        imgtk = ImageTk.PhotoImage(image=imgarr)
 
-    inputLabel.config(image=imgtk)
+        inputLabel.config(image=imgtk)
+    
     if filter == "Mean":
+        curfilter = "Mean"
         type_check("low-pass")
-        mean_filter(img)
-        mean_filter(img, (5,5))
+        mean_filter(imgs)
+        mean_filter(imgs, (5,5))
     elif filter == "Median":
+        curfilter = "Median"
         type_check("low-pass")
-        median_filter(img)
-        median_filter(img, (5,5))
+        median_filter(imgs)
+        median_filter(imgs, (5,5))
     elif filter == "Laplacian":
+        curfilter = "Laplacian"
         type_check("high-pass")
-        laplacian_filter(img)
+        laplacian_filter(imgs, "Original")
+    elif filter == "Option":
+        if curfilter == "Mean":
+            mean_filter(imgs, (int(kInput.get()),int(kInput.get())))
+        elif curfilter == "Median":
+            median_filter(imgs, (int(kInput.get()),int(kInput.get())))
+        elif curfilter == "Laplacian":
+            laplacian_filter(imgs, "Option", ksize=int(kInput.get()), scale=int(sInput.get()), delta=int(dInput.get()))
 
 def mean_filter(img, filter_size=(3,3)):
     global meantk33
     global meantk55
+    global meantknn
 
     resImg = img
     oriImg = np.array(img)
@@ -103,13 +162,18 @@ def mean_filter(img, filter_size=(3,3)):
     if filter_size[0] == 3: 
         meantk33 = ImageTk.PhotoImage(image=imgarr)
         m33resultLabel.config(image=meantk33)
-    else:
+    elif filter_size[0] == 5:
         meantk55 = ImageTk.PhotoImage(image=imgarr) 
         m55resultLabel.config(image=meantk55)
+    else:
+        meantknn = ImageTk.PhotoImage(image=imgarr)
+        optionresultLabel.config(image=meantknn)
+
 
 def median_filter(img, filter_size=(3,3)):
     global mediantk33
     global mediantk55
+    global mediantknn
 
     resImg = img
     oriImg = np.array(img)
@@ -124,17 +188,26 @@ def median_filter(img, filter_size=(3,3)):
     if filter_size[0] == 3:
         mediantk33 = ImageTk.PhotoImage(image=imgarr)
         m33resultLabel.config(image=mediantk33)
-    else:
+    elif filter_size[0] == 5:
         mediantk55 = ImageTk.PhotoImage(image=imgarr)
         m55resultLabel.config(image=mediantk55)
+    else:
+        mediantknn = ImageTk.PhotoImage(image=imgarr)
+        optionresultLabel.config(image=mediantknn)
    
-def laplacian_filter(img):
+def laplacian_filter(img, type, ksize=3, scale=1, delta=1):
     global laplaciantk33
+    global laplaciantknn
 
-    resImg = cv.Laplacian(img, -1)
+    resImg = cv.Laplacian(img, -1, ksize=ksize, scale=scale, delta=delta)
     imgarr = Image.fromarray(resImg)
-    laplaciantk33 = ImageTk.PhotoImage(image=imgarr)
-    m33resultLabel.config(image=laplaciantk33)
+
+    if type == "Original":
+        laplaciantk33 = ImageTk.PhotoImage(image=imgarr)
+        m33resultLabel.config(image=laplaciantk33)
+    elif type == "Option":
+        laplaciantknn = ImageTk.PhotoImage(image=imgarr)
+        optionresultLabel.config(image=laplaciantknn)
     
 meanBtn = Button(frame, text='Mean 필터', command=lambda: image_open("Mean"), width=12, height=1)
 meanBtn.grid(row=0, column=0, padx=10)
@@ -142,7 +215,5 @@ medianBtn = Button(frame, text="Median 필터", command=lambda: image_open("Medi
 medianBtn.grid(row=0, column=1, padx=10)
 laplacianBtn = Button(frame, text='Laplacian 필터', command=lambda: image_open("Laplacian"), width=12, height=1)
 laplacianBtn.grid(row=0, column=2, padx=10)
-freeBtn = Button(frame, text='Choice 필터', width=12, height=1)
-freeBtn.grid(row=0, column=3, padx=10)
 
 tk.mainloop()
