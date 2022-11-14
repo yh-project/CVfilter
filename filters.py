@@ -138,6 +138,18 @@ def image_open(filter):
         curfilter = "Laplacian"
         type_check("high-pass")
         laplacian_filter(imgs, "Original")
+    elif filter == "Roberts":
+        curfilter = "Roberts"
+        type_check("high-pass")
+        roberts_filter(imgs)
+    elif filter == "Sobel":
+        curfilter == "Sobel"
+        type_check("high-pass")
+        sobel_filter(imgs)
+    elif filter == "Prewitt":
+        curfilter == "Prewitt"
+        type_check("high-pass")
+        prewitt_filter(imgs)
     elif filter == "Option":
         if curfilter == "Mean":
             mean_filter(imgs, (int(kInput.get()),int(kInput.get())))
@@ -145,6 +157,12 @@ def image_open(filter):
             median_filter(imgs, (int(kInput.get()),int(kInput.get())))
         elif curfilter == "Laplacian":
             laplacian_filter(imgs, "Option", ksize=int(kInput.get()), scale=int(sInput.get()), delta=int(dInput.get()))
+        elif curfilter == "Roberts":
+            roberts_filter(imgs, (int(kInput.get()),int(kInput.get())))
+        elif curfilter == "Sobel":
+            sobel_filter(imgs, (int(kInput.get()),int(kInput.get())))
+        elif curfilter == "Prewitt":
+            prewitt_filter(imgs, (int(kInput.get()), int(kInput.get())))
 
 def mean_filter(img, filter_size=(3,3)):
     global meantk33
@@ -208,12 +226,33 @@ def laplacian_filter(img, type, ksize=3, scale=1, delta=1):
     elif type == "Option":
         laplaciantknn = ImageTk.PhotoImage(image=imgarr)
         optionresultLabel.config(image=laplaciantknn)
+
+def roberts_filter(img):
+    global robertstk33
+    global robertstknn
+    pass
+
+def sobel_filter(img):
+    global sobeltk33
+    global sobeltknn
+    pass
+
+def prewitt_filter(img):
+    global prewitttk33
+    global prewitttknn
+    pass
     
-meanBtn = Button(frame, text='Mean 필터', command=lambda: image_open("Mean"), width=12, height=1)
+meanBtn = Button(frame, text='Mean 필터', command=lambda: image_open("Mean"), width=10, height=1)
 meanBtn.grid(row=0, column=0, padx=10)
-medianBtn = Button(frame, text="Median 필터", command=lambda: image_open("Median"), width=12, height=1)
+medianBtn = Button(frame, text="Median 필터", command=lambda: image_open("Median"), width=10, height=1)
 medianBtn.grid(row=0, column=1, padx=10)
-laplacianBtn = Button(frame, text='Laplacian 필터', command=lambda: image_open("Laplacian"), width=12, height=1)
+laplacianBtn = Button(frame, text='Laplacian 필터', command=lambda: image_open("Laplacian"), width=10, height=1)
 laplacianBtn.grid(row=0, column=2, padx=10)
+roberts = Button(frame, text='Sobert 필터', command=lambda: image_open("Roberts"), width=10, height=1)
+roberts.grid(row=0, column=3, padx=10)
+sobel = Button(frame, text='Sobel 필터', command=lambda: image_open("Sobel"), width=10, height=1)
+sobel.grid(row=0, column=4, padx=10)
+prewitt = Button(frame, text='Prewitt 필터', command=lambda: image_open("Prewitt"), width=10, height=1)
+prewitt.grid(row=0, column=5, padx=10)
 
 tk.mainloop()
