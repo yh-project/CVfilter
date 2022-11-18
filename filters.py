@@ -87,23 +87,61 @@ oresultLabel = Label(tk, image=result)
 oresultLabel.place(x=430, y=625, width=100, height=100)
 
 # option result
-optionresult = LabelFrame(tk, text="Option Result", padx=10, pady=10)
-optionresult.place(x=580, y=500, width=350, height=350)
+optionresult1 = LabelFrame(tk, text="Option Result1", padx=10, pady=10)
+optionresult1.place(x=580, y=500, width=350, height=350)
 
-optionresultLabel = Label(optionresult)
-optionresultLabel.pack()
+optionresult1Label = Label(optionresult1)
+optionresult1Label.pack()
+
+optionresult2 = LabelFrame(tk, text="Option Result2", padx=10, pady=10)
+optionresult2.place(x=980, y=500, width=350, height=350)
+
+optionresult2Label = Label(optionresult2)
+optionresult2Label.pack()
+
+optionresult2Label.pack_forget()
+optionresult2.place_forget()
 
 def type_check(type):
     global state5
 
-    if type == "low-pass" and state5 == False:
-        m55result.place(x=980, y=100, width=350, height=350)
-        m55resultLabel.pack()
-        state5 = True
+    if type == "low-pass":
+        if state5 == "high":
+            m55result.place(x=980, y=100, width=350, height=350)
+            m55resultLabel.pack()
+        elif state5 == "roberts-prewitt-sobel":
+            optionresult2Label.pack_forget()
+            optionresult2.place_forget()
+            optionresult1.config(text='Option Result')
+            m33result.config(text='3x3 Result')
+            m55result.config(text='5x5 Result')
+        optionresult1Label.config(image='')
+        optionresult2Label.config(image='')
+        state5 = "low"
     elif type == "high-pass":
+        if state5 == "roberts-prewitt-sobel":
+            m33result.config("3x3 Result")
+            optionresult2Label.pack_forget()
+            optionresult2.place_forget()
+            optionresult1.config(text='Option Result')
         m55resultLabel.pack_forget()
         m55result.place_forget()
-        state5 = False
+        optionresult1Label.config(image='')
+        optionresult2Label.config(image='')
+        state5 = "high"
+    elif type == "roberts-prewitt-sobel":
+        if state5 == "high":
+            m55result.place(x=980, y=100, width=350, height=350)
+            m55resultLabel.pack()
+        m33result.config(text='x 방향 미분')
+        m55result.config(text='y 방향 미분')
+        optionresult2.place(x=980, y=500, width=350, height=350)
+        optionresult2Label.pack()
+        optionresult1.config(text='x 방향 Option')
+        optionresult2.config(text='y 방향 Option')
+        optionresult1Label.config(image='')
+        optionresult2Label.config(image='')
+        state5 = "roberts-prewitt-sobel"
 
 def image_url():
     tk.filename = filedialog.askopenfilename(initialdir='', title='파일선택', filetypes=(('all files', '*.*'), ('png files', '*.png'), ('jpg files', '*.jpg')))
@@ -140,15 +178,15 @@ def image_open(filter):
         laplacian_filter(imgs, "Original")
     elif filter == "Roberts":
         curfilter = "Roberts"
-        type_check("high-pass")
+        type_check("roberts-prewitt-sobel")
         roberts_filter(imgs)
     elif filter == "Sobel":
-        curfilter == "Sobel"
-        type_check("high-pass")
+        curfilter = "Sobel"
+        type_check("roberts-prewitt-sobel")
         sobel_filter(imgs)
     elif filter == "Prewitt":
-        curfilter == "Prewitt"
-        type_check("high-pass")
+        curfilter = "Prewitt"
+        type_check("roberts-prewitt-sobel")
         prewitt_filter(imgs)
     elif filter == "Option":
         if curfilter == "Mean":
@@ -157,12 +195,8 @@ def image_open(filter):
             median_filter(imgs, (int(kInput.get()),int(kInput.get())))
         elif curfilter == "Laplacian":
             laplacian_filter(imgs, "Option", ksize=int(kInput.get()), scale=int(sInput.get()), delta=int(dInput.get()))
-        elif curfilter == "Roberts":
-            roberts_filter(imgs, (int(kInput.get()),int(kInput.get())))
         elif curfilter == "Sobel":
-            sobel_filter(imgs, (int(kInput.get()),int(kInput.get())))
-        elif curfilter == "Prewitt":
-            prewitt_filter(imgs, (int(kInput.get()), int(kInput.get())))
+            sobel_filter(imgs, "Option", (int(kInput.get()),int(kInput.get())))
 
 def mean_filter(img, filter_size=(3,3)):
     global meantk33
@@ -185,7 +219,7 @@ def mean_filter(img, filter_size=(3,3)):
         m55resultLabel.config(image=meantk55)
     else:
         meantknn = ImageTk.PhotoImage(image=imgarr)
-        optionresultLabel.config(image=meantknn)
+        optionresult1Label.config(image=meantknn)
 
 
 def median_filter(img, filter_size=(3,3)):
@@ -211,7 +245,7 @@ def median_filter(img, filter_size=(3,3)):
         m55resultLabel.config(image=mediantk55)
     else:
         mediantknn = ImageTk.PhotoImage(image=imgarr)
-        optionresultLabel.config(image=mediantknn)
+        optionresult1Label.config(image=mediantknn)
    
 def laplacian_filter(img, type, ksize=3, scale=1, delta=1):
     global laplaciantk33
@@ -225,34 +259,80 @@ def laplacian_filter(img, type, ksize=3, scale=1, delta=1):
         m33resultLabel.config(image=laplaciantk33)
     elif type == "Option":
         laplaciantknn = ImageTk.PhotoImage(image=imgarr)
-        optionresultLabel.config(image=laplaciantknn)
+        optionresult1Label.config(image=laplaciantknn)
 
 def roberts_filter(img):
-    global robertstk33
-    global robertstknn
-    pass
+    global xrobertstk33
+    global yrobertstk33
 
-def sobel_filter(img):
-    global sobeltk33
-    global sobeltknn
-    pass
+    roberts_x = np.array([[-1, 0, 0], [0, 1, 0], [0, 0, 0]])
+    roberts_y = np.array([[0, 0, -1], [0, 1, 0], [0, 0, 0]])    
+
+    roberts_x = cv.convertScaleAbs(cv.filter2D(img, -1, roberts_x))
+    roberts_y = cv.convertScaleAbs(cv.filter2D(img, -1, roberts_y))
+
+    ximgarr = Image.fromarray(roberts_x)
+    yimgarr = Image.fromarray(roberts_y)
+
+    xrobertstk33 = ImageTk.PhotoImage(image=ximgarr)
+    yrobertstk33 = ImageTk.PhotoImage(image=yimgarr)
+
+    m33resultLabel.config(image=xrobertstk33)
+    m55resultLabel.config(image=yrobertstk33)
+
+def sobel_filter(img, type="Original", filter_size=(3,3)):
+    global xsobeltk33
+    global ysobeltk33
+    global xsobeltknn
+    global ysobeltknn
+
+    sobel_x = cv.Sobel(img, -1, 1, 0, ksize=filter_size[0])
+    sobel_y = cv.Sobel(img, -1, 0, 1, ksize=filter_size[1])
+
+    ximgarr = Image.fromarray(sobel_x)
+    yimgarr = Image.fromarray(sobel_y)
+
+    if type == "Original":
+        xsobeltk33 = ImageTk.PhotoImage(image=ximgarr)
+        ysobeltk33 = ImageTk.PhotoImage(image=yimgarr)
+        m33resultLabel.config(image=xsobeltk33)
+        m55resultLabel.config(image=ysobeltk33)
+    elif type == "Option":
+        xsobeltknn = ImageTk.PhotoImage(image=ximgarr)
+        ysobeltknn = ImageTk.PhotoImage(image=yimgarr)
+        optionresult1Label.config(image=xsobeltknn)
+        optionresult2Label.config(image=ysobeltknn)
 
 def prewitt_filter(img):
-    global prewitttk33
-    global prewitttknn
-    pass
+    global xprewitttk33
+    global yprewitttk33
+
+    prewitt_x = np.array([[-1, -1, -1], [0, 0, 0], [1, 1, 1]])
+    prewitt_y = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]])
+
+    prewitt_x = cv.convertScaleAbs(cv.filter2D(img, -1, prewitt_x))
+    prewitt_y = cv.convertScaleAbs(cv.filter2D(img, -1, prewitt_y))
+
+    ximgarr = Image.fromarray(prewitt_x)
+    yimgarr = Image.fromarray(prewitt_y)
+
+    xprewitttk33 = ImageTk.PhotoImage(image=ximgarr)
+    yprewitttk33 = ImageTk.PhotoImage(image=yimgarr)
+
+    m33resultLabel.config(image=xprewitttk33)
+    m55resultLabel.config(image=yprewitttk33)
     
-meanBtn = Button(frame, text='Mean 필터', command=lambda: image_open("Mean"), width=10, height=1)
+meanBtn = Button(frame, text='Mean 필터', command=lambda: image_open("Mean"), width=12, height=1)
 meanBtn.grid(row=0, column=0, padx=10)
-medianBtn = Button(frame, text="Median 필터", command=lambda: image_open("Median"), width=10, height=1)
+medianBtn = Button(frame, text="Median 필터", command=lambda: image_open("Median"), width=12, height=1)
 medianBtn.grid(row=0, column=1, padx=10)
-laplacianBtn = Button(frame, text='Laplacian 필터', command=lambda: image_open("Laplacian"), width=10, height=1)
+laplacianBtn = Button(frame, text='Laplacian 필터', command=lambda: image_open("Laplacian"), width=12, height=1)
 laplacianBtn.grid(row=0, column=2, padx=10)
-roberts = Button(frame, text='Sobert 필터', command=lambda: image_open("Roberts"), width=10, height=1)
+roberts = Button(frame, text='Robert 필터', command=lambda: image_open("Roberts"), width=12, height=1)
 roberts.grid(row=0, column=3, padx=10)
-sobel = Button(frame, text='Sobel 필터', command=lambda: image_open("Sobel"), width=10, height=1)
+sobel = Button(frame, text='Sobel 필터', command=lambda: image_open("Sobel"), width=12, height=1)
 sobel.grid(row=0, column=4, padx=10)
-prewitt = Button(frame, text='Prewitt 필터', command=lambda: image_open("Prewitt"), width=10, height=1)
+prewitt = Button(frame, text='Prewitt 필터', command=lambda: image_open("Prewitt"), width=12, height=1)
 prewitt.grid(row=0, column=5, padx=10)
 
 tk.mainloop()
